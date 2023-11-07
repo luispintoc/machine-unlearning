@@ -5,6 +5,7 @@ import math
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn import linear_model, model_selection
+from scipy.stats import wasserstein_distance
 
 import torch
 import torch.nn.functional as F
@@ -39,13 +40,17 @@ def accuracy(net, loader):
     return correct / total
 
 
-def unstructure_prune(model, pruning_amount=0.2, global_pruning=False, random_init=False):
+def unstructure_prune(model, pruning_amount=0.2, global_pruning=False, random_init=False, only_fc=False):
 
     parameters_to_prune = []
     if global_pruning:
         for name, module in model.named_modules():
-            if isinstance(module, torch.nn.Conv2d) or isinstance(module, torch.nn.Linear):
-                parameters_to_prune.append((module, 'weight'))
+            if only_fc:
+                if isinstance(module, torch.nn.Linear):
+                    parameters_to_prune.append((module, 'weight'))
+            else:
+                if isinstance(module, torch.nn.Conv2d) or isinstance(module, torch.nn.Linear):
+                    parameters_to_prune.append((module, 'weight'))
 
         #Global pruning
         prune.global_unstructured(
@@ -56,9 +61,14 @@ def unstructure_prune(model, pruning_amount=0.2, global_pruning=False, random_in
 
     else:
          for name, module in model.named_modules():
-            if isinstance(module, torch.nn.Conv2d) or isinstance(module, torch.nn.Linear):
-                prune.l1_unstructured(module, name='weight', amount=pruning_amount)
-                parameters_to_prune.append((module, 'weight'))
+            if only_fc:
+                if isinstance(module, torch.nn.Linear):
+                    prune.l1_unstructured(module, name='weight', amount=pruning_amount)
+                    parameters_to_prune.append((module, 'weight'))
+            else:
+                if isinstance(module, torch.nn.Conv2d) or isinstance(module, torch.nn.Linear):
+                    prune.l1_unstructured(module, name='weight', amount=pruning_amount)
+                    parameters_to_prune.append((module, 'weight'))
                 
 
     # Randomly re-initialize pruned weights while preserving the mask
@@ -73,6 +83,29 @@ def unstructure_prune(model, pruning_amount=0.2, global_pruning=False, random_in
             # Assign the new weights
             setattr(module, param_name, torch.nn.Parameter(new_weights))
         # Make the pruning permanent by removing the mask
+        prune.remove(module, param_name)
+
+
+def prune_test(model, pruning_amount=0.2, only_fc=False):
+
+    parameters_to_prune = []
+    for name, module in model.named_modules():
+        if only_fc:
+            if isinstance(module, torch.nn.Linear):
+                parameters_to_prune.append((module, 'weight'))
+        else:
+            if isinstance(module, torch.nn.Conv2d) or isinstance(module, torch.nn.Linear):
+                parameters_to_prune.append((module, 'weight'))
+
+    # Global pruning
+    prune.global_unstructured(
+        parameters_to_prune,
+        pruning_method=prune.L1Unstructured,
+        amount=pruning_amount
+    )
+
+    # Make the pruning permanent
+    for module, param_name in parameters_to_prune:
         prune.remove(module, param_name)
 
 def plot_teacher_student_outputs(teacher_logits, student_logits):
@@ -156,6 +189,8 @@ def get_all_metrics(test_losses, student_model, retain_loader, forget_loader, va
     print(
         f"The MIA has an accuracy of {ft_mia_scores.mean():.3f} on forgotten vs unseen images"
     )
+
+    print(f'Earth movers distance = {wasserstein_distance(ft_forget_losses, test_losses):.3f}')
 
     return ft_forget_losses, test_losses, ft_mia_scores
 

@@ -2,6 +2,7 @@
 example notebooks/data
 example notebooks/weights
 *.pth
+*.pt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
