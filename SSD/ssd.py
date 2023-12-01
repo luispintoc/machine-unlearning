@@ -343,17 +343,16 @@ class ParameterPerturber:
                 gc.collect()
                 # Calculate the Z-score for fimp
                 z_scores_fimp = (fimp - mean_fimp) / (std_fimp + 1e-10)  # Added epsilon to avoid division by zero
-                import matplotlib.pyplot as plt
-                plt.hist(z_scores_fimp.cpu().flatten())
-                plt.show()
+                # import matplotlib.pyplot as plt
+                # plt.hist(z_scores_fimp.cpu().flatten())
+                # plt.show()
         
                 # Define an outlier threshold for Z-score
-                outlier_threshold = 5  # You can adjust this threshold as needed
+                outlier_threshold = 2  # You can adjust this threshold as needed
         
                 # Find where fimp is greater than oimp and is an outlier based on Z-score
-                outlier_and_greater = (z_scores_fimp > outlier_threshold) & (fimp > 5*oimp)
+                outlier_and_greater = (z_scores_fimp > outlier_threshold) & (fimp > oimp)
         
-
                 # Zero out weights where fimp > oimp
                 # locations = torch.where(fimp > oimp*1e3)
                 # if locations[0].numel() > 0:
@@ -361,9 +360,9 @@ class ParameterPerturber:
                 #     print(f"Layer and Parameter: {n}")
 
                 # If any such conditions are met, print the layer name and the indices
-                if torch.any(outlier_and_greater):
-                    print(f"Layer: {n}")
-                    print(f"Indices where condition is True: {torch.nonzero(outlier_and_greater)}")
+                # if torch.any(outlier_and_greater):
+                #     print(f"Layer: {n}")
+                #     print(f"Indices where condition is True: {torch.nonzero(outlier_and_greater)}")
                 
 
                 p[outlier_and_greater] = 0
