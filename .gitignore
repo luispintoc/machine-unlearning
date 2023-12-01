@@ -3,7 +3,10 @@ example notebooks/data
 example notebooks/weights
 *.pth
 *.pt
+<<<<<<< HEAD
 *.pkl
+=======
+>>>>>>> 9e6ec008e826ce1cd8589f6e7f2b969097b58444
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
