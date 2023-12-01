@@ -1,7 +1,5 @@
 # Machine Unlearning
 # Team name: Air Liquide
-Public rank: 57
-Private rank: 800
 
 Competition link: https://www.kaggle.com/competitions/neurips-2023-machine-unlearning
 
