@@ -5,7 +5,6 @@ import math
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn import linear_model, model_selection
-<<<<<<< HEAD
 import pandas as pd
 from torchvision.models.feature_extraction import create_feature_extractor
 from scipy.stats import wasserstein_distance
@@ -19,9 +18,6 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import StratifiedKFold
 from sklearn.pipeline import Pipeline
 from sklearn.metrics import confusion_matrix
-=======
-from scipy.stats import wasserstein_distance
->>>>>>> 9e6ec008e826ce1cd8589f6e7f2b969097b58444
 
 import torch
 import torch.nn.functional as F
